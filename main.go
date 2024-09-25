@@ -6,26 +6,35 @@ import (
 	"github.com/Reneechang17/Distributed-File-System/p2p"
 )
 
-func main() {
-	tcptransportOpts := p2p.TCPTransportOpts {
-		ListenAddr: ":3000",
+func makeServer(listenAddr string, nodes ...string) *FileServer {
+	tcptransportOpts := p2p.TCPTransportOpts{
+		ListenAddr:    listenAddr,
 		HandshakeFunc: p2p.NOPHandshakeFunc,
-		Decoder: p2p.DefaultDecoder{},
+		Decoder:       p2p.DefaultDecoder{},
 		// TODO: Implement OnPeer
 	}
 	tcpTransport := p2p.NewTCPTransport(tcptransportOpts)
 
-	fileServerOpts := FileServerOpts {
-		StorageRoot: "3000_network",
+	fileServerOpts := FileServerOpts{
+		StorageRoot:       listenAddr + "_network",
 		PathTransformFunc: CASPathTransformFunc,
-		Transport: tcpTransport,
+		Transport:         tcpTransport,
+		BootstrapNodes:    nodes,
 	}
+	s :=  NewFileServer(fileServerOpts)
 
-	s := NewFileServer(fileServerOpts)
+	tcpTransport.OnPeer = s.OnPeer
 
-	if err := s.Start(); err != nil {
-		log.Fatal(err)
-	}
+	return s
+}
 
-	select {}
+func main() {
+	s1 := makeServer(":3000", "")
+	s2 := makeServer(":4000", ":3000")
+
+	go func() {
+		log.Fatal(s1.Start())
+	}()
+
+	s2.Start()
 }
