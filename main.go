@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"log"
+	"time"
 
 	"github.com/Reneechang17/Distributed-File-System/p2p"
 )
@@ -21,7 +23,7 @@ func makeServer(listenAddr string, nodes ...string) *FileServer {
 		Transport:         tcpTransport,
 		BootstrapNodes:    nodes,
 	}
-	s :=  NewFileServer(fileServerOpts)
+	s := NewFileServer(fileServerOpts)
 
 	tcpTransport.OnPeer = s.OnPeer
 
@@ -36,5 +38,14 @@ func main() {
 		log.Fatal(s1.Start())
 	}()
 
-	s2.Start()
+	time.Sleep(1 * time.Second)
+
+	go s2.Start()
+	time.Sleep(1 * time.Second)
+
+	data := bytes.NewReader([]byte("hello world"))
+
+	s2.StoreData("myprivatedata", data)
+
+	select {}
 }
