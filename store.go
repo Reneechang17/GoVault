@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const defaultRootFolderName = "ggnetwork"
+const defaultRootFolderName = "reneenetwork"
 
 func CASPathTransformFunc(key string) PathKey {
 	hash := sha1.Sum([]byte(key))
