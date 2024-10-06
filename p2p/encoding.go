@@ -23,8 +23,8 @@ func (dec DefaultDecoder) Decode(r io.Reader, msg *RPC) error {
 		return nil
 	}
 
-	// In case of a stream, we are not decoding what is being sent over the network.
-	// We are just setting Stream to true so we can handle that in our logic.
+	// In case of a stream we are not decoding what is being sent over the network.
+	// We are just setting Stream true so we can handle that in our logic.
 	stream := peekBuf[0] == IncomingStream
 	if stream {
 		msg.Stream = true
@@ -38,6 +38,6 @@ func (dec DefaultDecoder) Decode(r io.Reader, msg *RPC) error {
 	}
 
 	msg.Payload = buf[:n]
-	
+
 	return nil
 }

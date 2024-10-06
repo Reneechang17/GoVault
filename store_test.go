@@ -7,50 +7,38 @@ import (
 	"testing"
 )
 
-func newStroe() *Store {
-	opts := StoreOpts{
-		PathTransformFunc: CASPathTransformFunc,
-	}
-	return NewStore(opts)
-}
-
-func tearDown(t *testing.T, s *Store) {
-	if err := s.Clear(); err != nil {
-		t.Error(err)
-	}
-}
-
 func TestPathTransformFunc(t *testing.T) {
-	key := "somemycoursework"
+	key := "momsbestpicture"
 	pathKey := CASPathTransformFunc(key)
-	expectesFileName := "f979e8bf9ff685078fa7bf471347a1dc8b5de691"
-	expectedPathName := "f979e/8bf9f/f6850/78fa7/bf471/347a1/dc8b5/de691"
+	expectedFilename := "6804429f74181a63c50c3d81d733a12f14a353ff"
+	expectedPathName := "68044/29f74/181a6/3c50c/3d81d/733a1/2f14a/353ff"
 	if pathKey.PathName != expectedPathName {
-		t.Errorf("Have %s, want %s", pathKey.PathName, expectedPathName)
+		t.Errorf("have %s want %s", pathKey.PathName, expectedPathName)
 	}
 
-	if pathKey.Filename != expectesFileName {
-		t.Errorf("Have %s, want %s", pathKey.Filename, expectesFileName)
+	if pathKey.Filename != expectedFilename {
+		t.Errorf("have %s want %s", pathKey.Filename, expectedFilename)
 	}
 }
 
 func TestStore(t *testing.T) {
-	s := newStroe()
-	defer tearDown(t, s)
+	s := newStore()
+	id := generateID()
+	defer teardown(t, s)
 
 	for i := 0; i < 50; i++ {
-		key := fmt.Sprintf("somefile_%d", i)
-		data := []byte("some data")
+		key := fmt.Sprintf("foo_%d", i)
+		data := []byte("some jpg bytes")
 
-		if _, err := s.writeStream(key, bytes.NewReader(data)); err != nil {
+		if _, err := s.writeStream(id, key, bytes.NewReader(data)); err != nil {
 			t.Error(err)
 		}
 
-		if ok := s.Has(key); !ok {
-			t.Errorf("Expected to have key %s", key)
+		if ok := s.Has(id, key); !ok {
+			t.Errorf("expected to have key %s", key)
 		}
 
-		_, r, err := s.Read(key)
+		_, r, err := s.Read(id, key)
 		if err != nil {
 			t.Error(err)
 		}
@@ -60,12 +48,25 @@ func TestStore(t *testing.T) {
 			t.Errorf("want %s have %s", data, b)
 		}
 
-		if err := s.Delete(key); err != nil {
+		if err := s.Delete(id, key); err != nil {
 			t.Error(err)
 		}
 
-		if ok := s.Has(key); ok {
-			t.Errorf("Expected NOT to have key %s", key)
+		if ok := s.Has(id, key); ok {
+			t.Errorf("expected to NOT have key %s", key)
 		}
+	}
+}
+
+func newStore() *Store {
+	opts := StoreOpts{
+		PathTransformFunc: CASPathTransformFunc,
+	}
+	return NewStore(opts)
+}
+
+func teardown(t *testing.T, s *Store) {
+	if err := s.Clear(); err != nil {
+		t.Error(err)
 	}
 }
