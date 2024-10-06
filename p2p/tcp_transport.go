@@ -16,6 +16,7 @@ type TCPPeer struct {
 	// if we dial and retrieve a conn => outbound = true
 	// if we accept and retrieve a conn => outbound = false
 	outbound bool
+
 	wg *sync.WaitGroup
 }	
 
@@ -62,9 +63,8 @@ func (t *TCPTransport) Addr() string {
 	return t.ListenAddr
 }
 
-// Consume implements the Transport interface.
-// <-chan RPC is a receive-only channel of RPCs.
-// For reading the incoming messages received from another peer in the network.
+// Consume implements the Tranport interface, which will return read-only channel
+// for reading the incoming messages received from another peer in the network.
 func (t * TCPTransport) Consume() <-chan RPC {
 	return t.rpcch
 }
@@ -81,6 +81,7 @@ func (t *TCPTransport) Dial(addr string) error {
 		return err
 	}
 	go t.handleConn(conn, true)
+
 	return nil
 }
 
@@ -91,9 +92,11 @@ func (t * TCPTransport) ListenAndAccept() error {
 	if err != nil {
 		return err
 	}
+
 	go t.startAcceptLoop()
 
 	log.Printf("TCP transport listening on port: %s\n", t.ListenAddr)
+
 	return nil
 }
 
@@ -103,6 +106,7 @@ func (t * TCPTransport) startAcceptLoop() {
 		if errors.Is(err, net.ErrClosed){
 			return
 		}
+
 		if err != nil {
 			fmt.Printf("TCP accept error: %s\n", err)
 		}

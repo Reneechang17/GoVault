@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
@@ -15,7 +14,7 @@ import (
 const defaultRootFolderName = "reneenetwork"
 
 func CASPathTransformFunc(key string) PathKey {
-	hash := sha1.Sum([]byte(key)) // [20]byte => []byte => [:]
+	hash := sha1.Sum([]byte(key)) 
 	hashStr := hex.EncodeToString(hash[:])
 
 	blocksize := 5
@@ -76,32 +75,38 @@ func NewStore(opts StoreOpts) *Store {
 	if len(opts.Root) == 0 {
 		opts.Root = defaultRootFolderName
 	}
+
 	return &Store{
 		StoreOpts: opts,
 	}
 }
 
-func (s *Store) Write(key string, r io.Reader) (int64, error) {
-	return s.writeStream(key, r)
-}
-
-func (s *Store) Read(key string) (io.Reader, error) {
-	f, err := s.readStream(key)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, f)
-
-	return buf, err
-}
-
-func (s *Store) readStream(key string) (io.ReadCloser, error) {
+func (s *Store) Has(key string) bool {
 	pathKey := s.PathTransformFunc(key)
 	fullPathWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.FullPath())
-	return os.Open(fullPathWithRoot)
+
+	_, err := os.Stat(fullPathWithRoot)
+	return !errors.Is(err, os.ErrNotExist) 
+}
+
+func (s *Store) Clear() error {
+	return os.RemoveAll(s.Root)
+}
+
+func (s *Store) Delete(key string) error {
+	pathKey := s.PathTransformFunc(key)
+
+	defer func() {
+		log.Printf("deleted [%s] from disk", pathKey.FullPath())
+	}()
+
+	firstPathNameWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.FirstPathName())
+
+	return os.RemoveAll(firstPathNameWithRoot)
+}
+
+func (s *Store) Write(key string, r io.Reader) (int64, error) {
+	return s.writeStream(key, r)
 }
 
 func (s *Store) writeStream(key string, r io.Reader)(int64, error) {
@@ -128,25 +133,23 @@ func (s *Store) writeStream(key string, r io.Reader)(int64, error) {
 	return n, nil
 }
 
-func (s *Store) Has(key string) bool {
+func (s *Store) Read(key string) (int64, io.Reader, error) {
+	return s.readStream(key)
+}
+
+func (s *Store) readStream(key string) (int64, io.ReadCloser, error) {
 	pathKey := s.PathTransformFunc(key)
 	fullPathWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.FullPath())
+	
+	file, err := os.Open(fullPathWithRoot)
+	if err != nil {
+		return 0, nil, err
+	}
 
-	_, err := os.Stat(fullPathWithRoot)
-	return !errors.Is(err, os.ErrNotExist) 
-}
-
-func (s *Store) Clear() error {
-	return os.RemoveAll(s.Root)
-}
-
-func (s *Store) Delete(key string) error {
-	pathKey := s.PathTransformFunc(key)
-
-	defer func() {
-		log.Printf("deleted [%s] from disk", pathKey.FullPath())
-	}()
-
-	firstPathNameWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.FirstPathName())
-	return os.RemoveAll(firstPathNameWithRoot)
+	fi, err := file.Stat()
+	if err != nil {
+		return 0, nil, err
+	}
+	
+	return fi.Size(), file, nil
 }
