@@ -48,7 +48,7 @@ func main() {
 	time.Sleep(2 * time.Second)
 
 	for i := 0; i < 20; i++ {
-		key := fmt.Sprintf("picture_%d.png", i)
+		key := fmt.Sprintf("myprivatedata_%d", i)
 		data := bytes.NewReader([]byte("hello world"))
 		s3.Store(key, data)
 
