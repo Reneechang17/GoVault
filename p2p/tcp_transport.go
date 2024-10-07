@@ -33,6 +33,7 @@ func (p *TCPPeer) CloseStream() {
 }
 
 func (p *TCPPeer) Send(b []byte) error {
+	// writes the byte slice b to the connection and returns any error that occurs.
 	_, err := p.Conn.Write(b)
 	return err
 }

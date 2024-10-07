@@ -9,23 +9,27 @@ import (
 	"io"
 )
 
+// Generates a random 32-byte ID and returns it as a hexadecimal string.
 func generateID() string {
 	buf := make([]byte, 32)
 	io.ReadFull(rand.Reader, buf)
 	return hex.EncodeToString(buf)
 }
 
+// Hashes a given key using MD5 and returns the hash as a hexadecimal string.
 func hashKey(key string) string {
 	hash := md5.Sum([]byte(key))
 	return hex.EncodeToString(hash[:])
 }
 
+// Generates a new 32-byte encryption key.
 func newEncryptionKey() []byte {
 	keyBuf := make([]byte, 32)
 	io.ReadFull(rand.Reader, keyBuf)
 	return keyBuf
 }
 
+// Copies data from src to dst while applying a stream cipher.
 func copyStream(stream cipher.Stream, blockSize int, src io.Reader, dst io.Writer) (int, error) {
 	var (
 		buf = make([]byte, 32*1024)
@@ -51,6 +55,7 @@ func copyStream(stream cipher.Stream, blockSize int, src io.Reader, dst io.Write
 	return nw, nil
 }
 
+// Decrypts data from src and writes it to dst.
 func copyDecrypt(key []byte, src io.Reader, dst io.Writer) (int, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
