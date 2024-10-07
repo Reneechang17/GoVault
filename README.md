@@ -1,4 +1,4 @@
-# GoVault -- A Distributed File Syst
+# GoVault -- A Distributed File System
 
 ## Project Introduction
 - Built a decentralized, content-addressable distributed file storage system in Go, featuring peer-to-peer communication, secure file storage, data broadcasting, file versioning, and encryption, designed to handle large-scale datasets across multiple nodes efficiently.
