@@ -2,7 +2,7 @@
 
 ## 1. Project Description:
 
-This project implements a decentralized, peer-to-peer (P2P) distributed file storage system. It is designed to allow nodes to communicate directly with each other, enabling secure file storage, retrieval, versioning, and encryption. The system uses a P2P architecture, ensuring scalability and fault tolerance by distributing the data across multiple nodes.
+This project implements a **decentralized, peer-to-peer (P2P) distributed file storage system**. It is designed to allow nodes to communicate directly with each other, enabling secure file storage, retrieval, versioning, and encryption. The system uses a P2P architecture, ensuring scalability and fault tolerance by distributing the data across multiple nodes.
 
 ## 2. Key Features:
 
