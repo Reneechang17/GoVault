@@ -96,5 +96,5 @@ There are several areas where the system can be improved:
 - **Scalability**: Implement **distributed hash tables (DHT)** for peer discovery and file location, which would enhance the scalability and fault tolerance of the network.
 - **Error Handling**: Enhance error handling to better manage network failures and retries during file transfers.
 
-## 9.Technical Skills and Patterns:
+## 9. Technical Skills and Patterns:
 - Go, P2P architecture, TCP communication, encryption(AES, CTR Mode, SHA-1 Hashing), Serialization/Deserialization(GOB), concurrency and synchronization(Goroutines, Channels, Mutex)
